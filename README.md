@@ -1,6 +1,5 @@
 ---
 title: IoT Anomaly Agent
-emoji: 🤖
 colorFrom: indigo
 colorTo: purple
 sdk: gradio
