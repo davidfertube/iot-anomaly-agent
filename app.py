@@ -13,11 +13,11 @@ import random
 # Sensor configuration
 SENSORS = {
     'wellhead_pressure': {'name': 'Wellhead Pressure', 'unit': 'PSI', 'min': 2000, 'max': 3500, 'warning': 2800, 'critical': 3200, 'icon': '⬆️'},
-    'process_temp': {'name': 'Process Temperature', 'unit': '°F', 'min': 150, 'max': 250, 'warning': 210, 'critical': 235, 'icon': '🌡️'},
-    'flow_rate': {'name': 'Flow Rate', 'unit': 'BBL/D', 'min': 500, 'max': 1200, 'warning': 1000, 'critical': 1100, 'icon': '💧'},
-    'pump_vibration': {'name': 'Pump Vibration', 'unit': 'mm/s', 'min': 0, 'max': 10, 'warning': 4.5, 'critical': 7.5, 'icon': '📳'},
-    'h2s_level': {'name': 'H2S Level', 'unit': 'PPM', 'min': 0, 'max': 50, 'warning': 10, 'critical': 20, 'icon': '☁️'},
-    'power_draw': {'name': 'Power Draw', 'unit': 'kW', 'min': 20, 'max': 80, 'warning': 55, 'critical': 70, 'icon': '⚡'}
+    'process_temp': {'name': 'Process Temperature', 'unit': '°F', 'min': 150, 'max': 250, 'warning': 210, 'critical': 235, 'icon': '️'},
+    'flow_rate': {'name': 'Flow Rate', 'unit': 'BBL/D', 'min': 500, 'max': 1200, 'warning': 1000, 'critical': 1100, 'icon': ''},
+    'pump_vibration': {'name': 'Pump Vibration', 'unit': 'mm/s', 'min': 0, 'max': 10, 'warning': 4.5, 'critical': 7.5, 'icon': ''},
+    'h2s_level': {'name': 'H2S Level', 'unit': 'PPM', 'min': 0, 'max': 50, 'warning': 10, 'critical': 20, 'icon': '️'},
+    'power_draw': {'name': 'Power Draw', 'unit': 'kW', 'min': 20, 'max': 80, 'warning': 55, 'critical': 70, 'icon': ''}
 }
 
 class IoTSimulator:
@@ -56,7 +56,7 @@ class IoTSimulator:
     def inject_anomaly(self):
         """Simulate a pump bearing failure scenario"""
         self.anomaly_injected = True
-        self.add_log("⚠️ Anomaly injection started - simulating pump bearing failure", "WARN")
+        self.add_log("️ Anomaly injection started - simulating pump bearing failure", "WARN")
     
     def step_simulation(self):
         self.step += 1
@@ -75,28 +75,28 @@ class IoTSimulator:
             if self.step > 5:
                 self.values['pump_vibration'] = 2.1 + progression * 6.5
                 if self.get_status('pump_vibration', self.values['pump_vibration']) == 'WARNING':
-                    self.add_log(f"⚠️ Pump Vibration elevated: {self.values['pump_vibration']:.1f} mm/s", "WARN")
+                    self.add_log(f"️ Pump Vibration elevated: {self.values['pump_vibration']:.1f} mm/s", "WARN")
                 elif self.get_status('pump_vibration', self.values['pump_vibration']) == 'CRITICAL':
-                    self.add_log(f"🚨 CRITICAL: Pump Vibration at {self.values['pump_vibration']:.1f} mm/s", "CRITICAL")
+                    self.add_log(f" CRITICAL: Pump Vibration at {self.values['pump_vibration']:.1f} mm/s", "CRITICAL")
             
             # Temperature follows
             if self.step > 8:
                 self.values['process_temp'] = 185 + progression * 55
                 if self.get_status('process_temp', self.values['process_temp']) == 'WARNING':
-                    self.add_log(f"⚠️ Process Temperature elevated: {self.values['process_temp']:.0f}°F", "WARN")
+                    self.add_log(f"️ Process Temperature elevated: {self.values['process_temp']:.0f}°F", "WARN")
             
             # Power draw increases
             if self.step > 10:
                 self.values['power_draw'] = 42 + progression * 30
                 if self.get_status('power_draw', self.values['power_draw']) == 'WARNING':
-                    self.add_log(f"⚠️ Power Draw increased: {self.values['power_draw']:.0f} kW", "WARN")
+                    self.add_log(f"️ Power Draw increased: {self.values['power_draw']:.0f} kW", "WARN")
             
             # Generate work order when pattern is detected
             if self.step == 15 and not self.work_order:
-                self.add_log("🔍 Anomaly pattern detected: Pump bearing failure signature", "DETECT")
-                self.add_log("🤖 AI Agent initiating automated response workflow...", "ACTION")
+                self.add_log(" Anomaly pattern detected: Pump bearing failure signature", "DETECT")
+                self.add_log(" AI Agent initiating automated response workflow...", "ACTION")
                 time.sleep(0.5)
-                self.add_log("📋 Generating maintenance work order...", "ACTION")
+                self.add_log(" Generating maintenance work order...", "ACTION")
                 self.work_order = {
                     'id': f'WO-{random.randint(100000, 999999)}',
                     'asset': 'Pump Station P-101',
@@ -105,7 +105,7 @@ class IoTSimulator:
                     'eta': '~4 hours to failure',
                     'created': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 }
-                self.add_log(f"✓ Work Order {self.work_order['id']} created and sent to on-call engineer", "SUCCESS")
+                self.add_log(f" Work Order {self.work_order['id']} created and sent to on-call engineer", "SUCCESS")
         
         # Update history
         for sensor_id in self.values:
@@ -152,11 +152,11 @@ class IoTSimulator:
         for log in self.logs[-10:]:
             if 'CRITICAL' in log:
                 color = '#ef4444'
-            elif 'WARN' in log or '⚠️' in log:
+            elif 'WARN' in log or '️' in log:
                 color = '#f59e0b'
-            elif 'SUCCESS' in log or '✓' in log:
+            elif 'SUCCESS' in log or '' in log:
                 color = '#10b981'
-            elif 'ACTION' in log or '🤖' in log:
+            elif 'ACTION' in log or '' in log:
                 color = '#8b5cf6'
             else:
                 color = '#888'
@@ -168,7 +168,7 @@ class IoTSimulator:
             work_order_html = f'''
             <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.1)); border: 1px solid #6366f1; border-radius: 12px; padding: 1rem; margin-top: 1rem;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <span style="font-weight: bold;">📋 Work Order Generated</span>
+                    <span style="font-weight: bold;"> Work Order Generated</span>
                     <span style="background: rgba(99, 102, 241, 0.3); padding: 0.25rem 0.5rem; border-radius: 4px; font-family: monospace; font-size: 0.75rem;">{self.work_order['id']}</span>
                 </div>
                 <div style="display: grid; gap: 0.25rem; font-size: 0.85rem;">
@@ -190,15 +190,15 @@ simulator = IoTSimulator()
 def run_simulation(progress=gr.Progress()):
     """Run the full anomaly detection simulation"""
     simulator.reset()
-    simulator.add_log("🔌 Connecting to Azure IoT Hub...", "INFO")
+    simulator.add_log(" Connecting to Azure IoT Hub...", "INFO")
     yield simulator.get_dashboard_data()
     time.sleep(0.5)
     
-    simulator.add_log("📡 Receiving telemetry from 6 sensors", "INFO")
+    simulator.add_log(" Receiving telemetry from 6 sensors", "INFO")
     yield simulator.get_dashboard_data()
     time.sleep(0.5)
     
-    simulator.add_log("🤖 AI Agent monitoring initialized", "INFO")
+    simulator.add_log(" AI Agent monitoring initialized", "INFO")
     yield simulator.get_dashboard_data()
     time.sleep(0.5)
     
@@ -227,7 +227,7 @@ def reset_simulation():
 # Create Gradio interface
 with gr.Blocks(title="IoT Anomaly Detection Agent", theme=gr.themes.Soft(primary_hue="indigo")) as demo:
     gr.Markdown("""
-    # 🤖 IoT Anomaly Detection Agent
+    #  IoT Anomaly Detection Agent
     **Real-time industrial sensor monitoring with AI-powered anomaly detection and automated work order generation**
     
     This demo simulates a pump bearing failure scenario where the AI agent:
@@ -240,17 +240,17 @@ with gr.Blocks(title="IoT Anomaly Detection Agent", theme=gr.themes.Soft(primary
         with gr.Column(scale=2):
             sensor_output = gr.HTML(label="Sensor Dashboard")
             
-            gr.Markdown("### 🔗 Architecture")
+            gr.Markdown("###  Architecture")
             gr.Markdown("`Sensors → Azure IoT Hub → Stream Analytics → Anomaly ML → Sim.ai Agent → Work Order`")
         
         with gr.Column(scale=1):
-            gr.Markdown("### 📊 Agent Log")
+            gr.Markdown("###  Agent Log")
             logs_output = gr.HTML(label="Agent Activity")
             work_order_output = gr.HTML(label="Work Order")
     
     with gr.Row():
         run_btn = gr.Button("▶️ Run Simulation", variant="primary", size="lg")
-        reset_btn = gr.Button("🔄 Reset", variant="secondary")
+        reset_btn = gr.Button(" Reset", variant="secondary")
     
     # Event handlers
     run_btn.click(
