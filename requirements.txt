@@ -1,0 +1,7 @@
+gradio
+pandas
+numpy
+plotly
+huggingface_hub
+python-dotenv
+scikit-learn
