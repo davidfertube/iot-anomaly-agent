@@ -21,12 +21,12 @@ tags:
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Portfolio](https://img.shields.io/badge/Portfolio-davidfernandez.dev-blue)](https://davidfernandez.dev)
-[![Demo](https://img.shields.io/badge/Demo-Live-green)](https://huggingface.co/spaces/davidfertube/IoT-Anomaly-Agent)
+[![Demo](https://img.shields.io/badge/Demo-Live-green)](https://huggingface.co/spaces/davidfertube/anomaly-agent)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
 
 ## Overview
 
-**Turbine Anomaly Detection Agent** is an AI agent for real-time gas turbine monitoring. It detects anomalies in vibration, temperature, and performance data using Isolation Forest, then provides LLM-powered root cause analysis to correlate sensor deviations with known turbine failure modes.
+**Anomaly Agent** provides real-time turbine monitoring with automated root cause analysis using Isolation Forest and LLM-powered diagnostics. Gas turbines generate massive sensor streams—manual monitoring misses subtle anomalies that precede forced outages. This system detects anomalies in vibration, temperature, and pressure data, then automatically performs root cause analysis.
 
 ## System Architecture
 
