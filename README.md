@@ -1,90 +1,110 @@
----
-title: IoT Anomaly Agent
-colorFrom: indigo
-colorTo: purple
-sdk: gradio
-app_file: app.py
-pinned: true
-license: mit
-tags:
-  - anomaly-detection
-  - isolation-forest
-  - iot
-  - power-generation
-  - llm
-  - time-series
+# Anomaly Agent
+
+**Real-Time Turbine Anomaly Detection with Automated Root Cause Analysis**
+
+Isolation Forest-based anomaly detection for gas turbine sensor streams, paired with LLM-powered root cause analysis that translates statistical outliers into actionable maintenance diagnostics.
+
+[![Live Demo](https://img.shields.io/badge/Live_Demo-HuggingFace-yellow?style=flat-square)](https://huggingface.co/spaces/davidfertube/anomaly-agent)
+[![Portfolio](https://img.shields.io/badge/Portfolio-davidfernandez.dev-00d4ff?style=flat-square)](https://davidfernandez.dev/projects/anomaly-agent)
+
 ---
 
-# Turbine Anomaly Detection Agent
+## Problem
 
-> **Real-Time Power Plant Monitoring with Isolation Forest & LLM Root Cause Analysis**
+Gas turbines in power generation and compression service produce hundreds of sensor readings per second across vibration, temperature, pressure, and flow channels. Operators face two challenges:
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Portfolio](https://img.shields.io/badge/Portfolio-davidfernandez.dev-blue)](https://davidfernandez.dev)
-[![Demo](https://img.shields.io/badge/Demo-Live-green)](https://huggingface.co/spaces/davidfertube/anomaly-agent)
-[![Python 3.9+](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
+1. **Volume**: A single GE Frame 7FA generates 200+ sensor channels. Manual monitoring is impossible at scale across a fleet of 10-50 units
+2. **Subtlety**: The most expensive failures (bearing degradation, compressor blade fouling, hot gas path erosion) manifest as correlated multi-sensor drift weeks before catastrophic failure. Single-sensor threshold alarms miss these patterns entirely
+3. **Interpretation**: When anomalies are detected, translating statistical deviations into maintenance actions requires deep domain expertise. A vibration spike at 147Hz means nothing without context (bearing defect frequency for that shaft speed)
 
-## Overview
+## Solution
 
-**Anomaly Agent** provides real-time turbine monitoring with automated root cause analysis using Isolation Forest and LLM-powered diagnostics. Gas turbines generate massive sensor streams—manual monitoring misses subtle anomalies that precede forced outages. This system detects anomalies in vibration, temperature, and pressure data, then automatically performs root cause analysis.
+Two-stage system combining unsupervised anomaly detection with LLM-based diagnostic reasoning:
 
-## System Architecture
+1. **Isolation Forest** trained on normal operating data isolates anomalous sensor combinations in real-time. The model flags multi-variate deviations that single-channel alarms would miss
+2. **LLM root cause agent** (Mistral 7B) receives the anomaly context (which sensors deviated, by how much, operating conditions) and generates a plain-language diagnosis with recommended actions
 
-```mermaid
-graph TD
-    A[Turbine Sensors] --> B(Isolation Forest Model)
-    B --> C{Anomaly Detected?}
-    C -->|Yes| D[Anomalous Slice Extraction]
-    D --> E(Mistral-7B Agent)
-    E --> F[Root Cause Assessment]
-    F --> G[Operations Alert]
+**Key design decisions:**
+
+- **Isolation Forest over autoencoders**: For this application, interpretability matters more than reconstruction accuracy. Isolation Forest provides anomaly scores per sample and feature importance, which feed directly into the RCA agent's context
+- **Unsupervised training**: Labeled failure data is scarce in power generation. Isolation Forest only needs normal operating data, which is abundant from SCADA historians
+- **LLM for RCA, not detection**: The statistical model handles detection (fast, deterministic). The LLM handles interpretation (contextual, flexible). This separation prevents LLM hallucination from affecting detection reliability
+- **SCADA-native interface**: Sensor data ingestion follows OPC-UA / Modbus conventions. No custom telemetry protocol required
+
+## Architecture
+
+```
+Turbine SCADA / Historian
+         │
+         ▼
+┌──────────────────────────┐
+│  Sensor Preprocessing     │  Normalization, window aggregation
+│  Feature Engineering      │  Rolling stats, correlation features
+└──────────┬───────────────┘
+           ▼
+┌──────────────────────────┐
+│  Isolation Forest         │  Unsupervised anomaly scoring
+│  (scikit-learn)           │  Per-feature importance
+└──────────┬───────────────┘
+           ▼
+    ┌──────┴──────┐
+    │  Anomaly?   │
+    │  Score > θ  │
+    └──────┬──────┘
+           ▼ Yes
+┌──────────────────────────┐
+│  LLM Root Cause Agent     │  Mistral 7B via Groq
+│  Context: sensor deltas,  │  Operating conditions,
+│  equipment specs           │  Historical patterns
+└──────────┬───────────────┘
+           ▼
+┌──────────────────────────┐
+│  Operations Alert         │  Diagnosis + severity + action
+│  Gradio Dashboard         │  Real-time visualization
+└──────────────────────────┘
 ```
 
-## Key Features
+## Performance
 
-- **Multi-Variate Detection**: Processes temperature, pressure, and vibration simultaneously
-- **Agentic RCA**: Mistral-7B performs deep-dive analysis of anomalous data points
-- **Real-Time Visualization**: Interactive Plotly dashboards highlighting anomalies
-- **Automated Triage**: Classifies anomalies into severity levels to reduce alert fatigue
+| Metric | Value | Context |
+|--------|-------|---------|
+| Detection Latency | <15s | From sensor reading to anomaly flag |
+| Sensor Channels | Multi-variate | Vibration, temperature, pressure, flow |
+| Root Cause Analysis | Automated | LLM-generated diagnostics |
+| SCADA Integration | OPC-UA | Standard industrial protocol |
 
-## Technical Stack
+## Tech Stack
 
-| Component | Technology |
-|-----------|------------|
-| Anomaly Detection | Scikit-Learn (Isolation Forest) |
-| RCA Agent | Mistral-7B (HF Inference) |
-| Visualization | Plotly, Gradio |
-| Infrastructure | Python 3.9+ |
+| Component | Technology | Rationale |
+|-----------|-----------|-----------|
+| Detection | Isolation Forest (scikit-learn) | Unsupervised, interpretable, fast inference |
+| RCA Agent | Mistral 7B (Groq) | Low-latency LLM for contextual diagnostics |
+| UI | Gradio | Interactive sensor simulation dashboard |
+| Data Processing | Pandas, NumPy | Time-series preprocessing and windowing |
+| Deployment | Docker | Containerized for edge or cloud deployment |
 
-## Quick Start
+## Getting Started
 
 ```bash
 git clone https://github.com/davidfertube/iot-anomaly-agent.git
 cd iot-anomaly-agent
+
 pip install -r requirements.txt
+
+cp .env.example .env
+# Add your Groq API key for the RCA agent
+
 python app.py
 ```
 
-## Project Structure
+## License
 
-```
-iot-anomaly-agent/
-├── src/
-│   └── anomaly_engine.py  # Isolation Forest & LLM RCA logic
-├── app.py                 # Gradio Dashboard
-└── requirements.txt
-```
+MIT License - 2026 David Fernandez
 
-## Energy Industry Applications
+## Author
 
-- **Gas Turbine Monitoring**: Detect vibration and heat rate anomalies before forced outages
-- **Compressor Health**: Monitor discharge pressure and temperature deviations
-- **Generator Performance**: Track efficiency drops and bearing wear patterns
+**David Fernandez** — Senior AI Engineer
 
----
-
-**David Fernandez** | Applied AI Engineer | LangGraph Core Contributor
-
-- [Portfolio](https://davidfernandez.dev) • [LinkedIn](https://linkedin.com/in/davidfertube) • [GitHub](https://github.com/davidfertube)
-
-MIT License © 2026 David Fernandez
+- [Portfolio](https://davidfernandez.dev)
+- [LinkedIn](https://linkedin.com/in/davidfertube)
+- [GitHub](https://github.com/davidfertube)
